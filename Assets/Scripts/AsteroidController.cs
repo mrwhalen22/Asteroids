@@ -9,12 +9,17 @@ public class AsteroidController : MonoBehaviour
     public float speed, rSpeed;
     public int generation;
     public Vector2 direction;
+    public Vector3 offset;
+    public bool destroyed;
 
     public GameObject prefab;
+    [SerializeField] private ParticleSystem Explosion;
+  
 
     // Start is called before the first frame update
     void Start()
     {
+        Explosion = GetComponentInChildren<ParticleSystem>();
         rigidbody2d = GetComponent<Rigidbody2D>();
         speed = Random.Range(010,300) / 100.0f;
         rSpeed = Random.Range(2,10);
@@ -26,15 +31,21 @@ public class AsteroidController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if(!Explosion.isPlaying && destroyed) Destroy(gameObject);
+        
         transform.Rotate(0,0,rSpeed * Time.deltaTime);
         if(generation == 3) {
-            Destroy(gameObject);
+            destroyed = true;
         }
+
+       
     }
 
     void Split() {
-        GameObject new1 = GameObject.Instantiate(prefab, transform.position, Quaternion.identity);
-        GameObject new2 = GameObject.Instantiate(prefab, transform.position, Quaternion.identity);
+        Vector2 perp = Vector2.Perpendicular(direction);
+        offset = new Vector3(perp.x,perp.y,0);
+        GameObject new1 = GameObject.Instantiate(prefab, transform.position + offset, Quaternion.identity);
+        GameObject new2 = GameObject.Instantiate(prefab, transform.position - offset, Quaternion.identity);
         new1.transform.localScale = new Vector3(transform.localScale.x * 0.75f, transform.localScale.y * 0.75f, 1);
         new2.transform.localScale = new Vector3(transform.localScale.x * 0.75f, transform.localScale.y * 0.75f, 1);
         AsteroidController new1Controller = new1.GetComponent<AsteroidController>();
@@ -45,8 +56,10 @@ public class AsteroidController : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D other) {
         if(other.gameObject.layer == LayerMask.NameToLayer("Bullets")) {
+            Explosion.Play();
             Split();
-            Destroy(gameObject);
+            destroyed = true;
+            gameObject.GetComponent<SpriteRenderer>().enabled = false;
         }
     }
 }

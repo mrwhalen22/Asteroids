@@ -24,14 +24,14 @@ public class WrapScreenEntity : MonoBehaviour
 
     void ScreenWrap() {
         
-        if(CheckVisible()) { 
+        Vector3 playerVpos = mainCam.WorldToViewportPoint(transform.position);
+        if(playerVpos.x <= 1 && playerVpos.x >= 0 && playerVpos.y <= 1 && playerVpos.y >= 0) { 
             wrappingX = false;
             wrappingY = false;
             return;
         }
         if(wrappingX || wrappingY) return;
 
-        Vector3 playerVpos = mainCam.WorldToViewportPoint(transform.position);
         Vector3 newPosition = transform.position;
         if(playerVpos.x > 1 || playerVpos.x < 0) {
             newPosition.x = -newPosition.x;

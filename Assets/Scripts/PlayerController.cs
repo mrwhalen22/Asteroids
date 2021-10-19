@@ -5,18 +5,19 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     Vector2 direction;
-    bool isDead = false;
+    public static bool  isDead = false;
     float angle;
     public float bulletTimer;
-    public float ShootInterval = 0.05f;
-    public float speed = 7.5f;
+    public float ShootInterval;
+    public float speed;
     public float scale = 50.0f;
-    public float rotationSpeed = 3.0f;
+    public float rotationSpeed;
     Rigidbody2D rigidbody2d;
     private float vertical;
 
     public GameObject bullet;
     public Animator animator;
+    [SerializeField] private ParticleSystem Propulsion;
 
 
     // Start is called before the first frame update
@@ -39,7 +40,7 @@ public class PlayerController : MonoBehaviour
         float rotation = rotationSpeed * Mathf.Rad2Deg * horizontal * Time.deltaTime;
         transform.Rotate(0,0,-rotation, Space.Self);
 
-
+        
         angle = Mathf.Deg2Rad * transform.eulerAngles.z;
         direction = new Vector2(-Mathf.Sin(angle), Mathf.Cos(angle));  
 
@@ -55,13 +56,15 @@ public class PlayerController : MonoBehaviour
         if(isDead) return;
         if(vertical > 0) {
              if(rigidbody2d.velocity.magnitude <= 10.0f) {
-                float forceX = scale * speed * vertical * direction.x * Time.deltaTime;
-                float forceY = scale * speed * vertical * direction.y * Time.deltaTime;
+                 if(vertical > 0) Propulsion.Play();
+                float forceX = scale * speed * vertical * direction.x * Time.fixedDeltaTime;
+                float forceY = scale * speed * vertical * direction.y * Time.fixedDeltaTime;
                 // Debug.Log(forceX + ", " + forceY + ", " + angle);
 
                 Vector2 force = new Vector2(forceX, forceY);
                 rigidbody2d.AddForce(force);
             }
+            
         }
 
     }
@@ -69,7 +72,15 @@ public class PlayerController : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D other) {
         if(other.gameObject.layer == LayerMask.NameToLayer("Asteroids")) {
             isDead = true;
+            GameController.isRunning = false;
             animator.Play("ShipDeath");   
         }
+    }
+
+    public static void ResetPlayer(GameObject player) {
+        player.transform.position = Vector3.zero;
+        player.transform.rotation = Quaternion.Euler(0,0,0);
+        player.GetComponent<Rigidbody2D>().velocity = Vector3.zero;
+        PlayerController.isDead = false;
     }
 }
