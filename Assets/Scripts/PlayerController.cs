@@ -8,7 +8,7 @@ public class PlayerController : MonoBehaviour
     bool isDead = false;
     float angle;
     public float bulletTimer;
-    public float ShootInterval = 0.5f;
+    public float ShootInterval = 0.05f;
     public float speed = 7.5f;
     public float scale = 50.0f;
     public float rotationSpeed = 3.0f;
@@ -67,7 +67,9 @@ public class PlayerController : MonoBehaviour
     }
 
     private void OnCollisionEnter2D(Collision2D other) {
-        isDead = true;
-        animator.Play("ShipDeath");   
+        if(other.gameObject.layer == LayerMask.NameToLayer("Asteroids")) {
+            isDead = true;
+            animator.Play("ShipDeath");   
+        }
     }
 }
